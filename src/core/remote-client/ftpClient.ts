@@ -1,8 +1,7 @@
 import * as Client from 'ftp';
 import RemoteClient, { ConnectOption } from './remoteClient';
 
-// tslint:disable
-Client.prototype._send = function(cmd: string, cb: (err: Error) => void, promote: boolean) {
+(Client.prototype as any)._send = function(cmd: string, cb: (err: Error) => void, promote: boolean) {
   clearTimeout(this._keepalive);
   if (cmd !== undefined) {
     if (promote) this._queue.unshift({ cmd: cmd, cb: cb });
@@ -24,9 +23,8 @@ Client.prototype._send = function(cmd: string, cb: (err: Error) => void, promote
     }
   } else if (!this._curReq && !queueLen && this._ending) this._reset();
 };
-// tslint:enable
 
-Client.prototype.setLastMod = function(path: string, date: Date, cb) {
+(Client.prototype as any).setLastMod = function(path: string, date: Date, cb) {
   const dateStr =
     date.getUTCFullYear() +
     ('00' + (date.getUTCMonth() + 1)).slice(-2) +
@@ -42,7 +40,7 @@ export default class FTPClient extends RemoteClient {
   private connected: boolean = false;
 
   _initClient() {
-    return new Client();
+    return new (Client as any)();
   }
 
   _hasProvideAuth(connectOption: ConnectOption) {
