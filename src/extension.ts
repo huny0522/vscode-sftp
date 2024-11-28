@@ -29,8 +29,11 @@ function setup(workspaceFolders: vscode.WorkspaceFolder[]) {
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
   try {
+    console.log('Registering SFTP commands...');
     initCommands(context);
+    console.log('SFTP commands registered successfully');
   } catch (error) {
+    console.error('Failed to register SFTP commands:', error);
     reportError(error, 'initCommands');
   }
 

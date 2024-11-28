@@ -19,7 +19,9 @@
             "mockTypeScriptVersion": false,
             "configFile": "./tslint.json"
           }
-        ]
+        ],
+        "esModuleInterop": true,
+        "skipLibCheck": true
     },
     "exclude": [
         "node_modules",

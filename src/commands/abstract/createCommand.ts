@@ -33,8 +33,12 @@ export function createCommand(commandOption: CommandOption & { name: string }) {
       this.name = commandOption.name;
     }
 
-    doCommandRun(...args) {
-      commandOption.handleCommand.apply(this, args);
+    async doCommandRun(...args) {
+      return commandOption.handleCommand.apply(this, args);
+    }
+
+    async execute(): Promise<void> {
+      return Promise.resolve();
     }
   };
 }
@@ -65,6 +69,10 @@ export function createFileCommand(commandOption: FileCommandOption & { name: str
 
       await Promise.all(pendingTasks);
     }
+
+    async execute(): Promise<void> {
+      return Promise.resolve();
+    }
   };
 }
 
@@ -93,6 +101,10 @@ export function createFileMultiCommand(commandOption: FileCommandOption & { name
       });
 
       await Promise.all(pendingTasks);
+    }
+
+    async execute(): Promise<void> {
+      return Promise.resolve();
     }
   };
 }

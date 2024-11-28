@@ -45,7 +45,7 @@ function createFileSelector(filterCreator?) {
 }
 
 export function selectContext(): Promise<Uri | undefined> {
-  return new Promise((resolve, reject) => {
+  return new Promise<Uri | undefined>((resolve) => {
     const sercives = getAllFileService();
     const projectsList = sercives
       .map(service => ({
@@ -56,22 +56,17 @@ export function selectContext(): Promise<Uri | undefined> {
       }))
       .sort((l, r) => l.label.localeCompare(r.label));
 
-    // if (projectsList.length === 1) {
-    // return resolve(projectsList[0].value);
-    // }
-
     window
       .showQuickPick(projectsList, {
         placeHolder: 'Select a folder...',
       })
       .then(selection => {
         if (selection) {
-          return resolve(Uri.file(selection.value));
+          resolve(Uri.file(selection.value));
+        } else {
+          resolve(undefined);
         }
-
-        // cancel selection
-        resolve();
-      }, reject);
+      }, (error) => resolve(undefined));
   });
 }
 

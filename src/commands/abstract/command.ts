@@ -27,7 +27,7 @@ export default abstract class Command {
     };
   }
 
-  protected abstract async doCommandRun(...args: any[]);
+  protected abstract doCommandRun(...args: any[]): Promise<void>;
 
   async run(...args) {
     logger.trace(`run command '${this.name}'`);
@@ -43,4 +43,6 @@ export default abstract class Command {
   private commitCommandDone(...args: any[]) {
     this._commandDoneListeners.forEach(listener => listener(...args));
   }
+
+  abstract execute(): Promise<void>;
 }

@@ -25,6 +25,6 @@ app.sftpBarItem = new StatusBarItem(
   'SFTP@Natizyskunk',
   COMMAND_TOGGLE_OUTPUT
 );
-app.fsCache = LRU<string, string>({ max: 6 });
+app.fsCache = new LRU.default({ max: 6 });
 
 export default app;

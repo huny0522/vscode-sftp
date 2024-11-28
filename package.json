@@ -2,20 +2,20 @@
   "name": "sftp",
   "displayName": "SFTP",
   "description": "SFTP/FTP sync",
-  "version": "1.16.3",
-  "publisher": "Natizyskunk",
-  "author": "Natizyskunk <natan.fourie@hotmail.fr> (https://github.com/Natizyskunk)",
+  "version": "1.16.5",
+  "publisher": "huny0522",
+  "author": "huny0522",
   "engines": {
     "vscode": "^1.64.2"
   },
   "bugs": {
-    "url": "https://github.com/Natizyskunk/vscode-sftp/issues",
-    "email": "natan.fourie@hotmail.fr"
+    "url": "https://github.com/huny0522/vscode-sftp/issues",
+    "email": "huny0522@gmail.com"
   },
-  "homepage": "https://github.com/Natizyskunk/vscode-sftp/blob/master/README.md",
+  "homepage": "https://github.com/huny0522/vscode-sftp/blob/master/README.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Natizyskunk/vscode-sftp.git"
+    "url": "https://github.com/huny0522/vscode-sftp.git"
   },
   "license": "MIT",
   "categories": [
@@ -28,7 +28,7 @@
     "remote"
   ],
   "activationEvents": [
-    "onCommand:sftp.config",
+    "onStartupFinished",
     "workspaceContains:.vscode/sftp.json"
   ],
   "icon": "resources/icon.png",
@@ -76,8 +76,7 @@
     "commands": [
       {
         "command": "sftp.config",
-        "title": "Config",
-        "category": "SFTP"
+        "title": "SFTP: Config"
       },
       {
         "command": "sftp.setProfile",
@@ -688,12 +687,15 @@
     "pub:debug": "rm -rf _debug && mkdir _debug && vsce package --out _debug/sftp-debug.vsix && cd _debug && git init && git commit --allow-empty -m 'update debug package' && git checkout -b debug-pacakge && cp ../INSTALL_DEBUG.md README.md  && git add . && git commit -am 'update debug package' && git push git@github.com:Natizyskunk/vscode-sftp.git debug-pacakge --force"
   },
   "devDependencies": {
+    "@types/babel__traverse": "^7.18.3",
     "@types/fs-extra": "^9.0.13",
     "@types/jest": "^23.3.5",
+    "@types/lodash": "^4.14.191",
     "@types/lru-cache": "^4.1.1",
     "@types/node": "^9.6.51",
     "@types/vscode": "1.40",
     "@types/webpack-env": "^1.13.6",
+    "@types/yargs": "^17.0.13",
     "braces": ">=2.3.1",
     "glob-parent": ">=5.1.2",
     "jest": "^29.0.3",
@@ -705,11 +707,11 @@
     "set-value": "^4.0.1",
     "ts-loader": "^9.4.1",
     "tslint": "^6.1.3",
-    "typescript": "^3.9.7",
+    "typescript": "^5.7.2",
     "typescript-tslint-plugin": "^1.0.2",
     "webpack": "^5.0.0",
     "webpack-cli": "^4.7.0",
-    "yargs-parser": "^20.2.4"
+    "yargs": "^17.5.1"
   },
   "dependencies": {
     "async": "^3.2.4",
@@ -718,7 +720,7 @@
     "ignore": "^5.1.4",
     "joi": "^10.6.0",
     "lodash.debounce": "^4.0.8",
-    "lru-cache": "^4.1.3",
+    "lru-cache": "^6.0.0",
     "p-queue": "2.4.2",
     "ssh-config": "^1.1.3",
     "ssh2": "^1.13.0",
