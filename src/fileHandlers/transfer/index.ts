@@ -1,16 +1,47 @@
 import { refreshRemoteExplorer } from '../shared';
 import createFileHandler, { FileHandlerContext } from '../createFileHandler';
 import { transfer, sync, TransferOption, SyncOption, TransferDirection } from './transfer';
+import tmp from 'tmp';
+import UResource from '../../core/uResource';
+import { Uri } from 'vscode';
 
 function createTransferHandle(direction: TransferDirection) {
   return async function handle(this: FileHandlerContext, option) {
+    if (!this.config) {
+      throw new Error('Configuration is missing');
+    }
+    if (!this.target) {
+      throw new Error('Target is missing');
+    }
+    if (direction === TransferDirection.REMOTE_TO_LOCAL_TEMP) {
+      const tempFile = tmp.fileSync();
+      if (!tempFile.name) {
+        throw new Error('#Temporary file name is undefined');
+      }
+      // this.target 로컬 경로 변경
+      const targetUri = Uri.file(tempFile.name);
+      this.target = UResource.from(targetUri, UResource.makeResource(this.target.remoteUri));
+      // @ts-ignore
+      this.ctx.temp = targetUri.fsPath;
+    }
+
+
     const remoteFs = await this.fileService.getRemoteFileSystem(this.config);
     const localFs = this.fileService.getLocalFileSystem();
     const { localFsPath, remoteFsPath } = this.target;
     const scheduler = this.fileService.createTransferScheduler(this.config.concurrency);
     let transferConfig;
 
-    if (direction === TransferDirection.REMOTE_TO_LOCAL) {
+    if (direction === TransferDirection.REMOTE_TO_LOCAL_TEMP) {
+      transferConfig = {
+        srcFsPath: remoteFsPath,
+        srcFs: remoteFs,
+        targetFsPath: localFsPath,
+        targetFs: localFs,
+        transferOption: option,
+        transferDirection: TransferDirection.REMOTE_TO_LOCAL
+      };
+    } else if (direction === TransferDirection.REMOTE_TO_LOCAL) {
       transferConfig = {
         srcFsPath: remoteFsPath,
         srcFs: remoteFs,
@@ -31,6 +62,7 @@ function createTransferHandle(direction: TransferDirection) {
         transferDirection: TransferDirection.LOCAL_TO_REMOTE,
       };
     }
+    console.log(`TEST - ${direction}:`, transferConfig);
     // todo: abort at here. we should stop collect task
     await transfer(transferConfig, t => scheduler.add(t));
     await scheduler.run();
@@ -39,7 +71,7 @@ function createTransferHandle(direction: TransferDirection) {
 
 const uploadHandle = createTransferHandle(TransferDirection.LOCAL_TO_REMOTE);
 const downloadHandle = createTransferHandle(TransferDirection.REMOTE_TO_LOCAL);
-
+const tempLocalDownloadHandle = createTransferHandle(TransferDirection.REMOTE_TO_LOCAL_TEMP);
 export const sync2Remote = createFileHandler<SyncOption>({
   name: 'sync local ➞ remote',
   async handle(option) {
@@ -188,6 +220,19 @@ export const download = createFileHandler<TransferOption>({
 export const downloadFile = createFileHandler<TransferOption>({
   name: 'download file',
   handle: downloadHandle,
+  transformOption() {
+    const config = this.config;
+    return {
+      perserveTargetMode: false,
+      // remoteTimeOffsetInHours: config.remoteTimeOffsetInHours,
+      ignore: config.ignore,
+    };
+  },
+});
+
+export const downloadTempFile = createFileHandler<TransferOption>({
+  name: 'download temp file',
+  handle: tempLocalDownloadHandle,
   transformOption() {
     const config = this.config;
     return {

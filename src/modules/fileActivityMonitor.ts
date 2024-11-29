@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import logger from '../logger';
-import { realpathSync } from 'fs';
+import { realpathSync, readFileSync, unlinkSync } from 'fs';
 import app from '../app';
 import StatusBarItem from '../ui/statusBarItem';
 import { onDidOpenTextDocument, onDidSaveTextDocument, showConfirmMessage } from '../host';
@@ -12,7 +12,8 @@ import {
   disposeFileService,
 } from './serviceManager';
 import { reportError, isValidFile, isConfigFile, isInWorkspace } from '../helper';
-import { downloadFile, uploadFile } from '../fileHandlers';
+import { downloadFile, uploadFile, downloadTempFile } from '../fileHandlers';
+import { createHash } from 'crypto';
 
 let workspaceWatcher: vscode.Disposable;
 
@@ -58,6 +59,33 @@ async function handleFileSave(uri: vscode.Uri) {
   }
 }
 
+// @ts-ignore
+async function areFilesIdentical(localUri: vscode.Uri, remoteUri: vscode.Uri): Promise<boolean> {
+  // 다운로드한 파일 내용을 가져옵니다.
+  await downloadTempFile(remoteUri);
+
+  // Read local file content
+  // @ts-ignore
+  if(typeof remoteUri.temp === 'undefined') return false;
+  // @ts-ignore
+  const tempFile = remoteUri.temp;
+  const localContent = readFileSync(tempFile, 'utf-8');
+  const remoteContent = readFileSync(remoteUri.fsPath, 'utf-8');
+  console.log('TEST2 - localContent:', localContent);
+  console.log('TEST2 - remoteContent:', remoteUri, remoteContent);
+
+  // Calculate hashes
+  const localHash = createHash('sha256').update(localContent).digest('hex');
+  const remoteHash = createHash('sha256').update(remoteContent).digest('hex');
+
+  // Clean up the temporary file
+  unlinkSync(tempFile);
+
+  // 두 파일이 같은지 로그에 출력
+  logger.info(`[file-open] ${tempFile} is identical to remote: ${localHash === remoteHash}`);
+  return localHash === remoteHash;
+}
+
 async function downloadOnOpen(uri: vscode.Uri) {
   const fileService = getFileService(uri);
   if (!fileService) {
@@ -66,7 +94,14 @@ async function downloadOnOpen(uri: vscode.Uri) {
 
   const config = fileService.getConfig();
   if (config.downloadOnOpen) {
+    const remoteUri = uri; // Assuming uri is the remote file URI
+
+
     if (config.downloadOnOpen === 'confirm') {
+      if (await areFilesIdentical(uri, remoteUri)) {
+        logger.info(`[file-open] ${uri.fsPath} is identical to remote, skipping download.`);
+        return;
+      }
       const isConfirm = await showConfirmMessage('Do you want SFTP to download this file?');
       if (!isConfirm) return;
     }

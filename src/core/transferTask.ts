@@ -9,6 +9,7 @@ let hasWarnedModifedTimePermission = false;
 export enum TransferDirection {
   LOCAL_TO_REMOTE = 'local ➞ remote',
   REMOTE_TO_LOCAL = 'remote ➞ local',
+  REMOTE_TO_LOCAL_TEMP = 'remote ➞ local temp',
 }
 
 interface FileHandle {

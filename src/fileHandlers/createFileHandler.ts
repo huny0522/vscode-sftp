@@ -12,6 +12,7 @@ export interface FileHandlerContext {
   target: UResource;
   fileService: FileService;
   config: ServiceConfig;
+  ctx?: Uri | FileHandlerContext;
 }
 
 type FileHandlerContextMethod<R = void> = (this: FileHandlerContext) => R;
@@ -88,6 +89,7 @@ export default function createFileHandler<T>(
 ): (ctx: FileHandlerContext | Uri, option?: Partial<T>) => Promise<void> {
   async function fileHandle(ctx: Uri | FileHandlerContext, option?: T) {
     const handleCtx = ctx instanceof Uri ? handleCtxFromUri(ctx) : ctx;
+    handleCtx.ctx = ctx;
     const { target } = handleCtx;
 
     const invokeOption = handlerOption.transformOption
