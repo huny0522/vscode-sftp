@@ -66,7 +66,7 @@ async function areFilesIdentical(localUri: vscode.Uri, remoteUri: vscode.Uri): P
 
   // Read local file content
   // @ts-ignore
-  if(typeof remoteUri.temp === 'undefined') return false;
+  if(typeof remoteUri.temp === 'undefined') return true;
   // @ts-ignore
   const tempFile = remoteUri.temp;
   const localContent = readFileSync(tempFile, 'utf-8');
