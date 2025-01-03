@@ -7,6 +7,7 @@ import { UResource, FileService, TransferTask } from '../../core';
 import { validateConfig } from '../config';
 import watcherService from '../fileWatcher';
 import Trie from './trie';
+import { checkFileOnOpen } from '../fileActivityMonitor';
 
 const WIN_DRIVE_REGEX = /^([a-zA-Z]):/;
 const isWindows = process.platform === 'win32';
@@ -123,6 +124,8 @@ export function createFileService(config: any, workspace: string) {
       app.sftpBarItem.showMsg(`done ${filename}`, filepath, 2000 * 2);
     }
   });
+
+  checkFileOnOpen();
 
   return service;
 }

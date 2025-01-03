@@ -102,7 +102,7 @@ async function downloadOnOpen(uri: vscode.Uri) {
         logger.info(`[file-open] ${uri.fsPath} is identical to remote, skipping download.`);
         return;
       }
-      const isConfirm = await showConfirmMessage('Do you want SFTP to download this file?');
+      const isConfirm = await showConfirmMessage(`file: '${uri.fsPath}'\nDo you want SFTP to download this file?`);
       if (!isConfirm) return;
     }
 
@@ -148,13 +148,55 @@ function watchWorkspace({
   });
 }
 
+function waitActiveEditor(success: () => void, cnt: number = 0) {
+  if(cnt > 500){
+    logger.info(`[waitActiveEditor] timeout`);
+    return;
+  }
+
+  const activeEditor = vscode.window.activeTextEditor;
+  if (activeEditor) {
+    success();
+    return;
+  }
+  setTimeout(() => waitActiveEditor(success, cnt + 1), 100);
+}
+
+export function checkFileOnOpen(){
+  // 프로젝트 실행 시 이미 열려 있는 파일 확인
+  logger.info(`[init] checkFileOnOpen`);
+  vscode.window.visibleTextEditors.forEach(editor => {
+    const doc = editor.document;
+    logger.info(`[init] checkFileOnOpen: ${doc.uri.fsPath}`);
+    if (!isValidFile(doc.uri) || !isInWorkspace(doc.uri.fsPath)) {
+      return;
+    }
+
+    // 모든 에디터에서 실제로 열린 파일 확인, 임시 파일 및 출력 창 제외
+    if (editor.document.uri.scheme === 'file' &&
+        editor.document.uri.fsPath.indexOf('extension-output-') === -1 &&
+        editor.viewColumn !== undefined) {
+      downloadOnOpen(doc.uri);
+    }
+  });
+}
+
 function init() {
   onDidOpenTextDocument((doc: vscode.TextDocument) => {
     if (!isValidFile(doc.uri) || !isInWorkspace(doc.uri.fsPath)) {
       return;
     }
 
-    downloadOnOpen(doc.uri);
+    waitActiveEditor(() => {
+      const activeEditor = vscode.window.activeTextEditor;
+      if (activeEditor) {
+        const isDocumentOpen = activeEditor.document.uri.scheme === 'file' &&
+            activeEditor.document.uri.fsPath === doc.uri.fsPath;
+
+        if (!isDocumentOpen) return;
+        downloadOnOpen(doc.uri);
+      }
+    });
   });
 
   watchWorkspace({
