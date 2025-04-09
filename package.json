@@ -2,7 +2,7 @@
   "name": "sftp",
   "displayName": "SFTP",
   "description": "SFTP/FTP sync",
-  "version": "1.16.7",
+  "version": "1.16.8",
   "publisher": "huny0522",
   "author": "huny0522",
   "engines": {
@@ -243,6 +243,11 @@
       {
         "command": "sftp.delete.remote",
         "title": "Delete",
+        "category": "SFTP"
+      },
+      {
+        "command": "sftp.delete.withRemote",
+        "title": "Delete with Remote",
         "category": "SFTP"
       },
       {
@@ -497,6 +502,11 @@
           "group": "sftp.trans@2",
           "alt": "sftp.forceDownload",
           "when": "sftp.enabled && explorerResourceIsFolder"
+        },
+        {
+          "command": "sftp.delete.withRemote",
+          "group": "sftp.trans@3",
+          "when": "sftp.enabled && !explorerResourceIsRoot"
         }
       ],
       "editor/context": [
